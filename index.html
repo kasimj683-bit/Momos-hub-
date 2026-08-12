@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Momos Hub — Good Momos, Good Mood</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:Arial,sans-serif}
+header{padding:18px 16px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#080808;z-index:5}
+.logo{font-size:25px;font-weight:900}.logo span{color:#f11}.tag{font-size:11px;color:#aaa}
+.hero{text-align:center;padding:38px 18px 28px;background:radial-gradient(circle at 50% 0,#4a0000,#080808 60%)}
+.hero h1{font-size:38px;margin:8px 0}.hero p{color:#aaa;font-weight:bold}
+button{border:0;border-radius:12px;padding:12px 17px;font-weight:800;cursor:pointer}
+.stamp{background:#f11;color:white;font-size:16px}.tabs{display:flex;gap:8px;overflow:auto;padding:14px;background:#111;position:sticky;top:67px;z-index:4}.tab{background:#181818;color:#ddd;border:1px solid #333;white-space:nowrap}.tab.active{background:#f11;color:#fff}
+main{padding:20px 14px 120px;max-width:760px;margin:auto}.section{margin-bottom:24px}.section h2{font-size:24px;border-left:5px solid #f11;padding-left:10px}.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 4px;border-bottom:1px solid #222}.item small{display:block;color:#777;margin-top:4px}.price{color:#ff1b1b;font-weight:900;font-size:18px}.add{background:#fff;color:#111}.cart{position:fixed;bottom:14px;left:14px;right:14px;background:#f11;padding:12px 14px;border-radius:18px;display:flex;justify-content:space-between;align-items:center;z-index:10}.order{background:#fff;color:#111}.modal{display:none;position:fixed;inset:0;background:#000b;z-index:20;padding:20px;align-items:center;justify-content:center}.box{background:#151515;border:1px solid #333;border-radius:20px;padding:20px;max-width:500px;width:100%;max-height:90vh;overflow:auto}.box h2{margin-top:0}.close{float:right;background:#333;color:#fff}.line{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #292929}.total{font-size:20px;font-weight:900;padding:15px 0}.input{width:100%;padding:13px;border-radius:10px;border:1px solid #444;background:#0b0b0b;color:#fff;margin:7px 0}.wa{width:100%;background:#25d366;color:#fff;margin-top:10px}.stampgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:18px 0}.s{aspect-ratio:1;border:2px dashed #555;border-radius:12px;display:grid;place-items:center;font-size:22px}.s.filled{border-color:#f11;background:#300}.note{color:#aaa;font-size:13px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="logo">MOMOS <span>HUB</span> 🍜</div><div class="tag">GOOD MOMOS, GOOD MOOD</div></header>
+<section class="hero"><h1>Order Your Favourites</h1><p>Steam • Fried • Wings • Fries • Drinks</p><button class="stamp" onclick="openStamp()">⭐ My Stamp Card</button></section>
+<div class="tabs"><button class="tab active" onclick="filter('all',this)">All</button><button class="tab" onclick="filter('steam',this)">Steam Momos</button><button class="tab" onclick="filter('fried',this)">Fried Momos</button><button class="tab" onclick="filter('wings',this)">Chicken Wings</button><button class="tab" onclick="filter('fries',this)">French Fries</button><button class="tab" onclick="filter('drinks',this)">Drinks</button></div>
+<main id="menu"></main>
+<div class="cart"><b id="cartText">0 items • ₹0</b><button class="order" onclick="openOrder()">🖤 ORDER</button></div>
+
+<div class="modal" id="orderModal"><div class="box"><button class="close" onclick="closeModal('orderModal')">✕</button><h2>Your Order</h2><div id="summary"></div><input class="input" id="name" placeholder="Customer name"><input class="input" id="phone" placeholder="Your phone number"><div class="total" id="total"></div><button class="wa" onclick="sendWhatsApp()">📲 Confirm Order on WhatsApp</button></div></div>
+<div class="modal" id="stampModal"><div class="box"><button class="close" onclick="closeModal('stampModal')">✕</button><h2>⭐ My Stamp Card</h2><p class="note">Every completed order earns 1 stamp. Collect 10 stamps and get <b>1 Mojito FREE</b> 🎁</p><div class="stampgrid" id="stampgrid"></div><p id="stampmsg" class="note"></p></div></div>
+
+<script>
+const items=[
+["steam","Veg Momos (5 Pcs)",79],["steam","Paneer Momos (5 Pcs)",89],["steam","Corn Momos (5 Pcs)",79],["steam","Cheese Momos (5 Pcs)",99],["steam","Chicken Momos (5 Pcs)",99],["steam","Chicken Peri Peri Momos (5 Pcs)",119],["steam","Chicken Cheese Momos (5 Pcs)",129],
+["fried","Veg Fried Momos (5 Pcs)",89],["fried","Paneer Fried Momos (5 Pcs)",99],["fried","Chicken Fried Momos (5 Pcs)",119],["fried","Chicken Peri Peri Fried Momos (5 Pcs)",129],
+["wings","Chicken Strips (4 Pcs)",129],["wings","Chicken Wings (4 Pcs)",139],["wings","Chicken Lolipop (4 Pcs)",149],
+["fries","French Fries",79],["fries","Peri Peri Fries",89],["fries","Cheese Fries",99],
+["drinks","Blue Berry",89],["drinks","Green Apple",99],["drinks","Lime Mojito",79],["drinks","Virgin Mojito",69]
+];
+let cart=[];
+function render(type="all"){let groups={steam:"🥟 Steam Momos",fried:"🔥 Fried Momos",wings:"🍗 Chicken Wings",fries:"🍟 French Fries",drinks:"🥤 Drinks"};let data=type==="all"?items:items.filter(x=>x[0]===type);let out="";for(const g of Object.keys(groups)){let arr=data.filter(x=>x[0]===g);if(!arr.length)continue;out+=`<section class="section"><h2>${groups[g]}</h2>`;arr.forEach((x,i)=>{let id=items.indexOf(x);out+=`<div class="item"><div><b>${x[1]}</b><small>Freshly prepared</small></div><div><span class="price">₹${x[2]}</span> <button class="add" onclick="add(${id})">ADD</button></div></div>`});out+="</section>"}document.getElementById("menu").innerHTML=out}
+function add(i){cart.push(i);updateCart();alert(items[i][1]+" added to cart 🛒")}
+function updateCart(){let total=cart.reduce((s,i)=>s+items[i][2],0);document.getElementById("cartText").textContent=`${cart.length} items • ₹${total}`}
+function filter(t,b){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");render(t)}
+function openOrder(){if(!cart.length){alert("First add an item bro 🍜");return}let counts={};cart.forEach(i=>counts[i]=(counts[i]||0)+1);let html="";let total=0;for(let i in counts){let x=items[i],q=counts[i],sub=x[2]*q;total+=sub;html+=`<div class="line"><span>${x[1]} × ${q}</span><b>₹${sub}</b></div>`}document.getElementById("summary").innerHTML=html;document.getElementById("total").textContent="Total: ₹"+total;document.getElementById("orderModal").style.display="flex"}
+function closeModal(id){document.getElementById(id).style.display="none"}
+function sendWhatsApp(){let name=document.getElementById("name").value.trim()||"Customer";let phone=document.getElementById("phone").value.trim()||"-";let counts={};cart.forEach(i=>counts[i]=(counts[i]||0)+1);let total=0,msg=`Hi Momos Hub! 🍜%0A%0AName: ${name}%0APhone: ${phone}%0A%0AOrder:%0A`;for(let i in counts){let x=items[i],q=counts[i];total+=x[2]*q;msg+=`${x[1]} × ${q} - ₹${x[2]*q}%0A`}msg+=`%0ATotal: ₹${total}%0A%0APlease confirm my order.`;window.open("https://wa.me/919976907616?text="+msg,"_blank");let stamps=Number(localStorage.getItem("momosStamps")||0);if(stamps<10)localStorage.setItem("momosStamps",stamps+1);cart=[];updateCart();closeModal("orderModal")}
+function openStamp(){let n=Number(localStorage.getItem("momosStamps")||0);document.getElementById("stampgrid").innerHTML=Array.from({length:10},(_,i)=>`<div class="s ${i<n?"filled":""}">${i<n?"🍜":i+1}</div>`).join("");document.getElementById("stampmsg").innerHTML=n>=10?"🎉 You earned 1 Mojito FREE!":"You have "+n+"/10 stamps.";document.getElementById("stampModal").style.display="flex"}
+render();
+</script>
+</body>
+</html>
